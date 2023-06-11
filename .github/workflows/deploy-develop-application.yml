@@ -11,75 +11,75 @@ on:
 
 jobs:
 
- # laravel-test:
- #   name: 🧰 Laravel (PHP ${{ matrix.php-versions }})
-#   runs-on: ubuntu-latest
- #   env:
- #     DB_DATABASE: laravel
- #     DB_USERNAME: root
- #     DB_PASSWORD: password
- #     BROADCAST_DRIVER: log
- #   services:
- #     mysql:
- #       image: mysql:5.7
- #       env:
- #         MYSQL_ALLOW_EMPTY_PASSWORD: false
- #         MYSQL_ROOT_PASSWORD: password
- #         MYSQL_DATABASE: laravel
- #       ports:
- #         - 3306/tcp
- #       options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
- #   strategy:
- #     fail-fast: false
- #     matrix:
- #       php-versions: ['7.4', '8.0']
- #   steps:
- #     - name: Checkout
- #       uses: actions/checkout@v2
- #     - name: Setup PHP, with composer and extensions
- #       uses: shivammathur/setup-php@v2
- #       with:
- #         php-version: ${{ matrix.php-versions }}
- #         extensions: mbstring, dom, fileinfo, mysql
- #         coverage: xdebug #optional
- #     - name: Start mysql service
- #       run: sudo /etc/init.d/mysql start
- #     - name: Get composer cache directory
- #       id: composer-cache
- #       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
- #     - name: Cache composer dependencies
- #       uses: actions/cache@v2
- #       with:
- #         path: ${{ steps.composer-cache.outputs.dir }}
- #         # Use composer.json for key, if composer.lock is not committed.
- #         # key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
- #         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
- #         restore-keys: ${{ runner.os }}-composer-
- #     - name: Install Composer dependencies
- #       run: |
- #         cd src
- #         composer update --no-progress --prefer-dist --optimize-autoloader
- #     - name: Prepare the application
- #       run: |
- #         cd src
- #         php -r "file_exists('.env') || copy('.env.tests', '.env');"
- #         php artisan key:generate
- #     - name: Clear Config
- #       run:  |
- #         cd src
- #         php artisan config:clear
- #     - name: Run Migration
- #       run: |
- #         cd src
- #         php artisan migrate -v
- #       env:
- #         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
- #     - name: Test with phpunit
- #       run:  cd src && php artisan test
- #     #- name: Test with phpunit
- #     #  run: |
- #     #    cd src
- #     #    vendor/bin/phpunit
+  laravel-test:
+   name: 🧰 Laravel (PHP ${{ matrix.php-versions }})
+   runs-on: ubuntu-latest
+   env:
+     DB_DATABASE: laravel
+     DB_USERNAME: root
+     DB_PASSWORD: password
+     BROADCAST_DRIVER: log
+   services:
+     mysql:
+       image: mysql:5.7
+       env:
+         MYSQL_ALLOW_EMPTY_PASSWORD: false
+         MYSQL_ROOT_PASSWORD: password
+         MYSQL_DATABASE: laravel
+       ports:
+         - 3306/tcp
+       options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+   strategy:
+     fail-fast: false
+     matrix:
+       php-versions: ['8.1', '8.2']
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v2
+     - name: Setup PHP, with composer and extensions
+       uses: shivammathur/setup-php@v2
+       with:
+         php-version: ${{ matrix.php-versions }}
+         extensions: mbstring, dom, fileinfo, mysql
+         coverage: xdebug #optional
+     - name: Start mysql service
+       run: sudo /etc/init.d/mysql start
+     - name: Get composer cache directory
+       id: composer-cache
+       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+     - name: Cache composer dependencies
+       uses: actions/cache@v2
+       with:
+         path: ${{ steps.composer-cache.outputs.dir }}
+         # Use composer.json for key, if composer.lock is not committed.
+         # key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+         restore-keys: ${{ runner.os }}-composer-
+     - name: Install Composer dependencies
+       run: |
+         cd src
+         composer update --no-progress --prefer-dist --optimize-autoloader
+     - name: Prepare the application
+       run: |
+         cd src
+         php -r "file_exists('.env') || copy('.env.tests', '.env');"
+         php artisan key:generate
+     - name: Clear Config
+       run:  |
+         cd src
+         php artisan config:clear
+     - name: Run Migration
+       run: |
+         cd src
+         php artisan migrate -v
+       env:
+         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
+     - name: Test with phpunit
+       run:  cd src && php artisan test
+     #- name: Test with phpunit
+     #  run: |
+     #    cd src
+     #    vendor/bin/phpunit
 
 
   create-deployment-artifacts:
@@ -98,10 +98,10 @@ jobs:
           npm install
           npm run production
 
-      - name: Configure PHP 7.4
+      - name: Configure PHP 8.1
         uses: shivammathur/setup-php@master
         with:
-          php-version: 7.4
+          php-version: 8.1
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
       - name: Composer install
