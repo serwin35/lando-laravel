@@ -1,4 +1,4 @@
-name: '🎉 Deploy: Develop Application'
+name: '🎉 Deploy: Main Application'
 ##
 ## REMEMBER ADD TO GITHUB SECRETS
 ## DEVELOP_SSH_KEY,
@@ -7,7 +7,7 @@ name: '🎉 Deploy: Develop Application'
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
 
@@ -57,23 +57,28 @@ jobs:
  #         restore-keys: ${{ runner.os }}-composer-
  #     - name: Install Composer dependencies
  #       run: |
+ #         cd src
  #         composer update --no-progress --prefer-dist --optimize-autoloader
  #     - name: Prepare the application
  #       run: |
+ #         cd src
  #         php -r "file_exists('.env') || copy('.env.tests', '.env');"
  #         php artisan key:generate
  #     - name: Clear Config
  #       run:  |
+ #         cd src
  #         php artisan config:clear
  #     - name: Run Migration
  #       run: |
+ #         cd src
  #         php artisan migrate -v
  #       env:
  #         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
  #     - name: Test with phpunit
- #       run:  php artisan test
+ #       run:  cd src && php artisan test
  #     #- name: Test with phpunit
  #     #  run: |
+ #     #    cd src
  #     #    vendor/bin/phpunit
 
 
@@ -85,27 +90,29 @@ jobs:
       deployment-matrix: ${{ steps.export-deployment-matrix.outputs.deployment-matrix }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Compile CSS and Javascript
         run: |
+          cd src
           npm install
-          npm run build
+          npm run production
 
-      - name: Configure PHP 8.1
+      - name: Configure PHP 7.4
         uses: shivammathur/setup-php@master
         with:
-          php-version: 8.1
+          php-version: 7.4
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
       - name: Composer install
         run: |
+          cd src
           composer install  --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
       - name: Create deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf ../"${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
+        run: cd src && tar -czf ../"${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
 
       - name: Store artifact for distribution
         uses: actions/upload-artifact@v2

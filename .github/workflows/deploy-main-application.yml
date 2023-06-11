@@ -46,7 +46,7 @@ jobs:
  #       run: sudo /etc/init.d/mysql start
  #     - name: Get composer cache directory
  #       id: composer-cache
- #       run: echo "name=dir::$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+ #       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
  #     - name: Cache composer dependencies
  #       uses: actions/cache@v2
  #       with:
@@ -56,23 +56,29 @@ jobs:
  #         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
  #         restore-keys: ${{ runner.os }}-composer-
  #     - name: Install Composer dependencies
- #       run: composer update --no-progress --prefer-dist --optimize-autoloader
+ #       run: |
+ #         cd src
+ #         composer update --no-progress --prefer-dist --optimize-autoloader
  #     - name: Prepare the application
  #       run: |
+ #         cd src
  #         php -r "file_exists('.env') || copy('.env.tests', '.env');"
  #         php artisan key:generate
  #     - name: Clear Config
  #       run:  |
+ #         cd src
  #         php artisan config:clear
  #     - name: Run Migration
  #       run: |
+ #         cd src
  #         php artisan migrate -v
  #       env:
  #         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
  #     - name: Test with phpunit
- #       run:  php artisan test
+ #       run:  cd src && php artisan test
  #     #- name: Test with phpunit
  #     #  run: |
+ #     #    cd src
  #     #    vendor/bin/phpunit
 
 
@@ -84,29 +90,32 @@ jobs:
       deployment-matrix: ${{ steps.export-deployment-matrix.outputs.deployment-matrix }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Compile CSS and Javascript
         run: |
+          cd src
           npm install
-          npm run build
+          npm run production
 
-      - name: Configure PHP 8.1
+      - name: Configure PHP 7.4
         uses: shivammathur/setup-php@master
         with:
-          php-version: 8.1
+          php-version: 7.4
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
       - name: Composer install
-        run: composer install  --optimize-autoloader --no-dev --no-interaction
+        run: |
+          cd src
+          composer install  --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
       - name: Create deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf ../"${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
+        run: cd src && tar -czf ../"${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
 
       - name: Store artifact for distribution
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: app-build
           path: ${{ github.sha }}.tar.gz
@@ -118,7 +127,7 @@ jobs:
           JSON="${JSON//'%'/'%25'}"
           JSON="${JSON//$'\n'/'%0A'}"
           JSON="${JSON//$'\r'/'%0D'}"
-          echo "name=deployment-matrix::$JSON" >> $GITHUB_OUTPUT
+          echo "::set-output name=deployment-matrix::$JSON"
 
 
   prepare-release-on-servers:
@@ -128,13 +137,12 @@ jobs:
     needs: create-deployment-artifacts
     strategy:
       matrix:
-        server: ${{ fromJson($GITHUB_OUTPUT) }}
+        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v2
         with:
           name: app-build
-          path: ${{ github.sha }}.tar.gz
 
       - name: Upload
         uses: appleboy/scp-action@master
@@ -172,7 +180,7 @@ jobs:
 #    needs: [ create-deployment-artifacts, prepare-release-on-servers ]
 #    strategy:
 #      matrix:
-#        server: ${{ fromJson($GITHUB_OUTPUT.deployment-matrix) }}
+#        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
 #    steps:
 #
 #    - name: Run before hooks
@@ -200,7 +208,7 @@ jobs:
     needs: [ create-deployment-artifacts, prepare-release-on-servers ]
     strategy:
       matrix:
-        server: ${{ fromJson($GITHUB_OUTPUT.deployment-matrix) }}
+        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
     steps:
       - name: Activate release
         uses: appleboy/ssh-action@master
@@ -236,7 +244,7 @@ jobs:
 #    needs: [ create-deployment-artifacts, prepare-release-on-servers, run-before-hooks, activate-release ]
 #    strategy:
 #      matrix:
-#        server: ${{ fromJson($GITHUB_OUTPUT.deployment-matrix) }}
+#        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
 #    steps:
 #      - name: Run after hooks
 #        uses: appleboy/ssh-action@master
@@ -263,7 +271,7 @@ jobs:
     needs: [ create-deployment-artifacts, prepare-release-on-servers, activate-release]
     strategy:
       matrix:
-        server: ${{ fromJson($GITHUB_OUTPUT.deployment-matrix) }}
+        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
     steps:
       - name: Run after hooks
         uses: appleboy/ssh-action@master
