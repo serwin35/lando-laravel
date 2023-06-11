@@ -38,10 +38,10 @@ services:
     hosts:
       - database
   node:
-    type: node:19
+    type: node:20
     build:
-      - npm install
-      - npm run build
+      - npm --prefix src install
+      - npm --prefix src run build
   mailhog:
     type: mailhog
     hogfrom:
@@ -57,10 +57,10 @@ services:
       - docker-php-ext-install xsl
       - service cron start
     build:
-      - '[ ! -f ".env" ] && cp .env.example .env || echo ".env already present"'
-      - composer install
-      - php artisan key:generate
-      - php artisan migrate
+      - cd src && '[ ! -f ".env" ] && cp .env.example .env || echo ".env already present"'
+      - cd src && composer install
+      - cd src && php artisan key:generate
+      - cd src && php artisan migrate
     run_as_root:
       - service cron start
     run:
@@ -80,9 +80,10 @@ services:
 tooling:
   npm:
     service: node
+    cmd: "npm --prefix src"
   watch:
     service: node
-    cmd: "cd src && npm run build"
+    cmd: "npm run dev"
   horizon:terminate:
     service: horizon
     description: "Restarts the Horizon service"
