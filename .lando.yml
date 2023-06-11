@@ -57,7 +57,7 @@ services:
       - docker-php-ext-install xsl
       - service cron start
     build:
-      - cd src && '[ ! -f ".env" ] && cp .env.example .env || echo ".env already present"'
+      - '[ ! -f "src/.env" ] && cp src/.env.example src/.env || echo ".env already present"'
       - cd src && composer install
       - cd src && php artisan key:generate
       - cd src && php artisan migrate
