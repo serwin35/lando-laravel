@@ -34,11 +34,11 @@ services:
   database:
     portforward: 3307
   phpmyadmin:
-    type: phpmyadmin:5.1
+    type: phpmyadmin
     hosts:
       - database
   node:
-    type: node:20
+    type: node
     build:
       - npm --prefix src install
       - npm --prefix src run build
