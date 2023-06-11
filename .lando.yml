@@ -1,8 +1,8 @@
-name: "Laravel APP"
+name: "Laravel-APP"
 recipe: laravel
 
 env_file:
-  - .env
+  - src/.env
 
 #excludes:
 #  - vendor
@@ -82,7 +82,7 @@ tooling:
     service: node
   watch:
     service: node
-    cmd: "cd src && npm run watch-poll"
+    cmd: "cd src && npm run build"
   horizon:terminate:
     service: horizon
     description: "Restarts the Horizon service"
