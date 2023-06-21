@@ -80,9 +80,10 @@ services:
 tooling:
   npm:
     service: node
-    cmd: "npm --prefix src"
+    dir: /app/src
   watch:
     service: node
+    dir: /app/src
     cmd: "npm run dev"
   horizon:terminate:
     service: horizon
@@ -95,7 +96,7 @@ tooling:
     cmd: ./vendor/bin/phpunit
   coverage-report:
     service: appserver
-    cmd: "cd src && /app/vendor/bin/phpunit --coverage-html coverage-report/"
+    cmd: "/app/src/vendor/bin/phpunit --coverage-html coverage-report/"
     env:
       XDEBUG_MODE: coverage
   phpstan:
@@ -104,14 +105,18 @@ tooling:
     description: "Runs phpstan static analysis"
   phpcs:
     service: appserver
-    cmd: "cd src && /app/vendor/bin/phpcs"
+    cmd: "/app/src/vendor/bin/phpcs"
     options:
     description: Run phpcs for given folder or file.
   php-cs-fixer:
     service: appserver
-    cmd: "cd src && /app/vendor/bin/php-cs-fixer"
+    cmd: "/app/src/vendor/bin/php-cs-fixer"
     description: "Runs php-cs-fixer"
   pint:
     service: appserver
-    cmd: "cd src && /app/vendor/bin/pint"
+    cmd: "/app/src/vendor/bin/pint"
     description: Run laravel pint.
+  composer:
+    service: appserver
+    dir: /app/src
+    desxription: Run composer in src folder.
