@@ -7,11 +7,11 @@
 - Run `lando artisan storage:link`
 - Run `lando artisan user:create`
 - Run `lando watch`
-- 
+-
 - (Optional) when changing .lando.yml `lando rebuild -y`
 
 ### 🔑 Access local enviroment
-- [App](https://laravel.lndo.site)
+- [App](https://laravel-app.lndo.site)
 - [Mailhog](http://mail.lndo.site)
 - [Phpmyadmin](http://phpmyadmin.lndo.site)
 
@@ -27,8 +27,9 @@
 
 ## ⚙️ GitHub Actions
 * Remember add secrets:
-    - SSH_KEY
+    - MAIN_SSH_KEY
     - MAIN_LARAVEL_ENV
+    - DEVELOP_SSH_KEY
     - DEVELOP_LARAVEL_ENV
 - Deploy
     - main
