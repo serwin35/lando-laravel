@@ -11,11 +11,11 @@ env_file:
 config:
   webroot: src/public
   via: nginx
-  php: 8.1
+  php: 8.3
   xdebug: true
   cache: redis:6
   ssl: false
-  database: mysql:8.0
+  database: mysql:8
   config:
     database: .lando/my.cnf
     php: .lando/php.ini
@@ -48,7 +48,7 @@ services:
     hogfrom:
       - appserver
   appserver:
-    type: php:8.1
+    type: php:8.3
     workdir: /src
     ssl: true
     build_as_root:
@@ -74,7 +74,7 @@ services:
       depends_on:
         - database
   horizon:
-    type: php:8.1
+    type: php:8.3
     via: cli
     scanner: false
     command: "cd src && php artisan horizon"
