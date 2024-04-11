@@ -4,18 +4,18 @@ recipe: laravel
 env_file:
   - src/.env
 
-# excludes:
-  # - src/vendor
-  # - src/node_modules
+excludes:
+  - src/vendor
+  - src/node_modules
 
 config:
   webroot: src/public
   via: nginx
   php: 8.3
   xdebug: true
-  cache: redis:6
+  cache: redis
   ssl: false
-  database: mysql:8
+  database: mysql:8.0
   config:
     database: .lando/my.cnf
     php: .lando/php.ini
@@ -39,7 +39,7 @@ services:
     hosts:
       - database
   node:
-    type: node:19
+    type: node:20
     build:
       - npm --prefix src install
       - npm --prefix src run build
